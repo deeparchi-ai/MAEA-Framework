@@ -1,5 +1,8 @@
 # 🏛️ MAEA — Multi-Agent Enterprise Architecture Framework
 
+> 💡 MAEA 目前是一个**思考框架和参考架构**——协议规范、治理模型、Agent 设计方法论正在开放讨论和迭代中。
+> 欢迎参与 [Discussions](https://github.com/deeparchi-ai/MAEA-Framework/discussions)。
+
 > 当你的 AI Agent 超过 5 个时，MAEA 提供通信协议、治理框架和质量验证——
 > 让 Agent 从「prompt 模板集合」升级为「可治理的 AI 团队」。
 
