@@ -355,11 +355,130 @@ MACS governance checks at the protocol level:
 | [A2A Protocol](a2a-protocol.md) | MACS builds on A2A; every MACS-governed network is an A2A network |
 | [Security Model](security-model.md) | MACS inherits L1/L2/L3 levels; adds behavioral trust on top |
 | [Feishu Integration](feishu-integration.md) | Human escalation (L3 verdict: disagree) routes through Feishu |
+| [WLM](https://github.com/deeparchi-ai/wlm) | MACS resource governance implementation; goal-oriented scheduling for CPU and token budgets (§7) |
 | [a2a-go `a2aext`](https://github.com/a2aproject/a2a-go/tree/main/a2aext) | Reference Go implementation of governance interceptors |
 
 ---
 
-## 7. References
+## 7. Resource Governance (WLM)
+
+### 7.1 MACS Governs Resources, Not Just Decisions
+
+Sections 2–4 define how MACS governs agent *decisions*: who to trust, how to
+verify, what to allow. But governance is incomplete without resource control.
+A network of trusted agents that collectively exhausts the API budget by 2 PM
+is a governed failure — orderly, but still a failure.
+
+MACS's resource governance layer answers: **who gets how much of the shared
+resource pool, and who gets cut when the pool runs dry?**
+
+### 7.2 The WLM Architecture: Observe → Arbitrate → Apply
+
+MACS resource governance is implemented by **WLM** ([github.com/deeparchi-ai/wlm](https://github.com/deeparchi-ai/wlm)),
+a goal-oriented scheduler modeled on [IBM z/OS Workload Manager](https://www.ibm.com/docs/en/zos/latest?topic=management-zos-workload-manager).
+Four decades of mainframe workload management distilled into a three-stage
+control loop:
+
+```
+┌─────────────────────────────────────────────┐
+│  Service Policy (YAML)                       │
+│  "sg-architect:  response <5s,  imp=1"       │
+│  "do-developer:  keep working, imp=3"        │
+└──────────────────┬──────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────┐
+│  WLM Daemon                                   │
+│                                               │
+│  ┌─────────┐   ┌──────────┐   ┌───────────┐  │
+│  │ Observe │ → │Arbitrate │ → │   Apply    │  │
+│  │ (PSI /  │   │(重要性)  │   │(cpu.weight│  │
+│  │  burn   │   │          │   │ /限流)    │  │
+│  │  rate)  │   │          │   │           │  │
+│  └─────────┘   └──────────┘   └───────────┘  │
+│       ↑                            │          │
+│       └──── feedback loop ─────────┘          │
+└──────────────────────────────────────────────┘
+```
+
+**Observe** reads real-time resource pressure — `cpu.pressure` from Linux PSI
+for CPU mode, burn rate vs daily budget for token mode. **Arbitrate** applies
+MACS importance levels: an importance-1 agent whose target is unmet takes
+resources from importance-3 agents whose targets are already satisfied.
+**Apply** translates the arbitration decision into kernel-level or API-level
+enforcement.
+
+This is not priority. Priority is static — "you're always higher than me."
+WLM is goal-driven — "as long as your target is met, resources go to someone
+else."
+
+### 7.3 Two Resource Types, One Architecture
+
+| Resource | Type | Agent contention | WLM mode |
+|----------|------|:---:|----------|
+| **CPU** | Renewable | Low — agents mostly wait on I/O | CPU WLM: PSI → cpu.weight |
+| **Token budget** | Consumable — finite daily quota | **High** — shared API key, low-priority batch depletes high-priority reasoning | Token controller: burn rate → rate limiting |
+
+CPU WLM is the **concept proof** — ~600 lines of Go, zero kernel dependencies,
+7 unit tests covering all arbitration edge cases. It proved the three-stage
+architecture works in user-space Linux.
+
+Token budget control is the **product direction** — because in LLM agent
+systems, CPU is not the bottleneck. Token budgets are.
+
+### 7.4 Token Budget Controller
+
+The same observe→arbitrate→apply skeleton runs on a different resource:
+
+```
+CPU mode                     →  Token mode
+observe: PSI cpu.pressure    →  observe: burn rate vs daily budget
+arbitrate: weight rebalance  →  arbitrate: high-imp class gets floor allocation
+apply: cpu.weight            →  apply: API-level rate limiting / degradation
+```
+
+Four degradation levels (less aggressive than hard rejection):
+
+| Level | Condition | Action |
+|:-----:|-----------|--------|
+| **Green** | Budget ample | Allow |
+| **Yellow** | Burn rate elevated | Allow + suggest smaller model |
+| **Red** | Budget tight | Rate-limit; auto-degrade (Opus→Haiku, skip non-critical steps) |
+| **Black** | Budget exhausted | Only high-importance agents can call |
+
+This is a **soft governor**, not a hard circuit breaker. Degradation signals
+give agents a chance to self-regulate before the hard rejection kicks in —
+the same principle as MACS's partial verdict in cross-validation (§3.3).
+
+### 7.5 Integration with MACS Governance
+
+Resource governance interacts with the other five governance dimensions:
+
+| Dimension | WLM interaction |
+|-----------|----------------|
+| **Security boundaries (§4)** | Token limits are per-security-level: L1 agents have guaranteed floor allocation; budget exhaustion never blocks L1 |
+| **Behavioral trust (§2)** | Burn rate anomalies are a trust signal — an agent that consistently overshoots its expected token consumption per task may be in a reasoning loop |
+| **Cross-validation (§3)** | Cross-validation doubles token cost (primary + verifying model). WLM must account for this: if cross-validation pushes a task from green to yellow, the governance decision is "degrade, don't skip verification" |
+| **Audit trail (§5)** | Resource allocation decisions (who was rate-limited, when, why) are trace events in the audit chain |
+| **Escalation (§3.3)** | Black-level budget exhaustion triggers human notification via Feishu |
+
+### 7.6 Relationship to API Provider Limits
+
+API provider limits (OpenAI spend caps, Anthropic usage limits) are **hard
+ceilings** on aggregate consumption. They answer "how much total?" WLM answers
+"who gets it within that total?" Provider limits and WLM are complementary —
+not alternatives.
+
+### 7.7 Implementation Status
+
+| Component | Status | Tests |
+|-----------|:------:|:-----:|
+| CPU WLM (cgroup v2 + PSI) | ✅ Complete — concept proof | 7 unit tests, E2E verified |
+| Token budget controller | 🚧 Design phase — arbitration algorithm specified, Hermes integration designed | Arbitration test suite planned (min 7 boundary tests, matching CPU WLM coverage) |
+| WLM ↔ Feishu alerting | 📋 Not started | — |
+
+---
+
+## 8. References
 
 - [A2A Issue #1672 — Agent Identity Verification for Agent Cards](https://github.com/a2aproject/A2A/issues/1672)
 - [W3C Trace Context Level 2](https://www.w3.org/TR/trace-context-2/)
@@ -367,6 +486,8 @@ MACS governance checks at the protocol level:
 - [agentrust-io/trace — Behavioral evidence layer](https://github.com/agentrust-io/trace) (proposed by imran-siddique)
 - [MACS Reference Architecture (DeepArchi Vault)](https://github.com/deeparchi-ai/MAEA-Framework)
 - [Cross-Validation Protocol — DeepArchi whitepaper series](https://deeparchi.ai)
+- [WLM — Goal-oriented resource scheduler for MACS](https://github.com/deeparchi-ai/wlm)
+- [IBM z/OS Workload Manager](https://www.ibm.com/docs/en/zos/latest?topic=management-zos-workload-manager)
 
 ---
 
