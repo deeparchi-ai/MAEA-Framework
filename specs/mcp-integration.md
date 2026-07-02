@@ -31,7 +31,6 @@ MCP Server 和 Agent 是两类不同的实体：
 
 | MCP Server | 用途 | 协议 |
 |------------|------|------|
-| patent-mcp | 全球专利检索 | stdio |
 | firecrawl | Web 搜索与爬取 | HTTP |
 | maea-registry | Agent 注册表查询 | stdio |
 

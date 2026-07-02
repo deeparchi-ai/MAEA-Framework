@@ -199,7 +199,6 @@ Current MCP ecosystem:
 
 | Server | Purpose | Protocol |
 |--------|---------|----------|
-| patent-mcp | Global patent search | stdio |
 | maea-registry | Agent registry queries | stdio |
 | firecrawl | Web search + crawl | HTTP |
 

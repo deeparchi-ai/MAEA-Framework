@@ -10,7 +10,6 @@ DM Hub (sg-architect :9900)
   ├──A2A── do-ops (:9910)        运维
   ├──A2A── if-explorer (:9930)   创新探索
   ├──A2A── do-developer (:9912)  编码
-  ├──MCP── patent-mcp            专利检索
   └──MCP── firecrawl             Web 搜索
 ```
 

@@ -43,17 +43,17 @@ But open the Issues tab — the top-voted items aren't "add more Agents":
     ┌─────────────┤      ├─────────────┐
     │             │                   │
     ▼             ▼                   ▼
-┌────────┐  ┌──────────┐      ┌──────────────┐
+```┌────────┐  ┌──────────┐      ┌──────────────┐
 │Research│  │ Delivery │      │  Management  │
 │:9920   │  │:9912:9910│      │  WLM         │
-│deepsight│ │ dev  ops  │      │  Scheduler   │
+│        │  │ dev  ops  │      │  Scheduler   │
 └────────┘  └──────────┘      └──────────────┘
     │             │                   │
     └─────────────┼───────────────────┘
                   │
          ┌────────▼────────┐
          │  Tools (MCP)     │
-         │  patent search   │
+         │  search · files  │
          └─────────────────┘
 ```
 
@@ -65,7 +65,7 @@ But open the Issues tab — the top-voted items aren't "add more Agents":
   Human ──Feishu──► DM Hub (sg-architect) ──A2A──► Agent A
                      │                              Agent B
                      │                              Agent C
-                     └────MCP────► Tools (patent/search/...)
+                     └────MCP────► Tools (search/files/...)
 ```
 
 **Three Communication Buses:**
@@ -137,9 +137,6 @@ MAEA is a **framework**, not a product. Sub-projects:
 |------|------|
 | [macs](https://github.com/deeparchi-ai/macs) | Multi-Agent Coordination Runtime |
 | [wlm](https://github.com/deeparchi-ai/wlm) | Goal-driven resource scheduler (IBM WLM style) |
-| [patent-mcp](https://github.com/deeparchi-ai/patent-mcp-server) | Global patent search via MCP |
-| [deepsight](https://github.com/deeparchi-ai/deepsight) | Deep reasoning research methodology |
-| [deepblm](https://github.com/deeparchi-ai/deepblm-skill) | BLM strategy framework for the AI era |
 
 ---
 
