@@ -34,27 +34,29 @@ MACS applies the same architecture to agent systems.
 │  │                                                    │  │
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐           │  │
 │  │  │ §2 WLM   │ │ §3 Sec   │ │ §4 Audit │           │  │
-│  │  │ 资源调度  │ │ 安全     │ │ 审计     │           │  │
+│  │  │ Resource │ │ Access  │ │ Audit  │           │  │
+│  │  │ Scheduler│ │ Control │ │ Trail  │           │  │
 │  │  └──────────┘ └──────────┘ └──────────┘           │  │
 │  │                                                    │  │
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐           │  │
 │  │  │ §5 XVal  │ │ §6 JES   │ │ §7 DFSMS │           │  │
-│  │  │ 交叉验证  │ │ 批处理   │ │ 存储     │           │  │
+│  │  │ Cross   │ │ Batch  │ │ Storage│           │  │
+│  │  │ Validate│ │        │ │        │           │  │
 │  │  └──────────┘ └──────────┘ └──────────┘           │  │
 │  │                                                    │  │
 │  │  ┌──────────┐                                      │  │
 │  │  │ §8 VTAM  │                                      │  │
-│  │  │ 网络     │                                      │  │
+│  │  │ Network│                                      │  │
 │  │  └──────────┘                                      │  │
 │  └────────────────────┬───────────────────────────────┘  │
 │                       │                                  │
 │  ┌────────────────────▼───────────────────────────────┐  │
 │  │  Kernel (BCP)                                       │  │
-│  │  · Token 仲裁引擎  (observe → arbitrate → apply)    │  │
-│  │  · 安全熔断引擎     (<100ms 响应)                    │  │
-│  │  · 审计日志写入     (不可变, 独立进程)               │  │
-│  │  · Trace Span 传递  (W3C Trace Context 适配)        │  │
-│  │  · 刹车协议          (<1s 全集群生效)                │  │
+│  │  · Token arbitration   (observe → arbitrate → apply)  │  │
+│  │  · Circuit breaker     (<100ms response)               │  │
+│  │  · Audit log writer    (immutable, separate process)   │  │
+│  │  · Trace Span passing  (W3C Trace Context adapted)    │  │
+│  │  · Brake protocol      (<1s cluster-wide)              │  │
 │  └────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -100,15 +102,16 @@ programs don't hallucinate.
 Agents reach the kernel through two paths, matching IBM's online/batch split:
 
 ```
-  Online (联机)                     Batch (批处理)
-  飞书 DM · A2A 委托               Cron job · 定时采集
-       │                                │
-       ▼                                │ (bypasses middleware)
+  Online                            Batch
+  Feishu DM · A2A delegate          Cron job · scheduled task
+      │                                │
+      ▼                                │ (bypasses middleware)
   ┌──────────────┐                      │
-  │ MAEA 中间件   │                      │
-  │ · 路由 (DAG)  │                     │
-  │ · 注册表      │                     │
-  │ · Session     │                     │
+  │ MAEA Middle- │                      │
+  │ ware         │                      │
+  │ · Routing    │                      │
+  │ · Registry   │                      │
+  │ · Session    │                      │
   └──────┬───────┘                      │
          │                              │
          ▼                              ▼
@@ -175,9 +178,9 @@ else."
 │                                               │
 │  ┌──────────┐  ┌───────────┐  ┌──────────┐  │
 │  │ Observe  │→│ Arbitrate │→│   Apply   │  │
-│  │ (PSI /   │ │ (重要性)  │ │ (cgroup / │  │
-│  │  burn    │ │           │ │  限流)    │  │
-│  │  rate)   │ │           │ │           │  │
+│  │ (PSI /   │ │(importance│ │(cgroup / │  │
+│  │  burn    │ │    )      │ │ rate-limit│  │
+│  │  rate)   │ │           │ │    )      │  │
 │  └──────────┘  └───────────┘  └──────────┘  │
 │       ↑                           │          │
 │       └─── feedback loop ─────────┘          │
