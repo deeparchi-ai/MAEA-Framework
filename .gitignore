@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+
+# Demo artifacts (large files)
+demo/animation*.mp4
+demo/narration.mp3
+demo/frames/
+demo/snapshots/
+demo/compositions/
+demo/verify_frames/
+demo/work-*/
+demo/hyperframes.json
+demo/meta.json
+demo/index.html
+demo/animation.html
+
+# Hermes
+*.jsonl
+a2a_audit.jsonl
+a2a_conversations/

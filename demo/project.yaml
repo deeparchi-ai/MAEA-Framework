@@ -1,0 +1,5 @@
+name: MAEA Minimal A2A Demo
+slug: maea-demo
+target: python3 demo.py → 4 phases → 3 agents
+stack: Python 3.9+ stdlib only
+deadline: Sprint 1

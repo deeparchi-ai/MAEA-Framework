@@ -1,5 +1,9 @@
 # 🏛️ MAEA — Multi-Agent Enterprise Architecture Framework
 
+[![Stars](https://img.shields.io/github/stars/deeparchi-ai/MAEA-Framework?style=flat-square)](https://github.com/deeparchi-ai/MAEA-Framework/stargazers)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![Status](https://img.shields.io/badge/status-active-brightgreen?style=flat-square)](https://github.com/deeparchi-ai/MAEA-Framework)
+
 > 💡 MAEA 目前是一个**思考框架和参考架构**——协议规范、治理模型、Agent 设计方法论正在开放讨论和迭代中。
 > 欢迎参与 [Discussions](https://github.com/deeparchi-ai/MAEA-Framework/discussions)。
 
@@ -22,6 +26,40 @@
 → 深入阅读：[为什么 agency-agents 火了但不够用？](docs/why-maea.md)
 
 ---
+
+---
+
+## 架构全景
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      人类 (飞书 DM)                       │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+              ┌────────▼────────┐
+              │   DM Hub         │
+              │  sg-architect   │  路由中枢 + 架构治理
+              │   :9900          │
+              └───┬──────┬──────┘
+                  │      │
+    ┌─────────────┤      ├─────────────┐
+    │             │                   │
+    ▼             ▼                   ▼
+┌────────┐  ┌──────────┐      ┌──────────────┐
+│ 研究层  │  │ 交付层    │      │  管理层       │
+│:9920   │  │:9912:9910│      │  WLM          │
+│deepsight│  │ dev  ops  │      │  资源调度     │
+└────────┘  └──────────┘      └──────────────┘
+    │             │                   │
+    └─────────────┼───────────────────┘
+                  │
+         ┌────────▼────────┐
+         │  工具层 (MCP)    │
+         │  patent search   │
+         └─────────────────┘
+```
+
+**三条总线，五层治理，8 个 Agent 已在飞书中运行。**
 
 ## MAEA 做什么
 
@@ -61,6 +99,24 @@
 | **[Claude Code](claude-code/)** | 30秒 | 一个治理 Agent inside Claude Code，帮你选 Agent +查冲突 |
 | **[Hermes](hermes/)** | 30分钟 | 真实 A2A 网络，Agent 之间直接通信 + 飞书集成（MAEA 参考实现） |
 | **[只读](docs/)** | 0分钟 | 纯方法论 + 协议规范 |
+
+## 1 分钟跑起来
+
+```bash
+git clone https://github.com/deeparchi-ai/MAEA-Framework.git
+cd MAEA-Framework/demo
+python3 demo.py
+```
+
+输出：
+```
+Phase 1: Registry    ✅ 3 agents registered
+Phase 2: A2A Ping    ✅ all 3 reachable
+Phase 3: Delegate    ✅ task routed correctly
+Phase 4: Conflict    ✅ overlap detected
+```
+
+4 个 Phase 验证 A2A 协议 + 注册表 + 路由 + 冲突检测，不依赖任何外部服务。
 
 ---
 
