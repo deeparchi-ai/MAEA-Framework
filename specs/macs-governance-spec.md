@@ -577,10 +577,26 @@ Cron trigger → JES input queue → MACS kernel →
 
 ### 6.3 Current State
 
-Hermes cron provides timer-based triggering but lacks:
-- Priority queues (high-priority cron should preempt low-priority when WLM budget is tight)
-- Result delivery as structured Agent reports (currently raw stdout dump)
-- Job chaining (bank-procurement collection → auto-trigger analysis)
+Hermes cron provides timer-based triggering. The JES gate
+(`macs/integrations/jes-gate/jes-gate`) adds WLM-aware admission control:
+
+| Capability | Status | Implementation |
+|-----------|:------:|---------------|
+| Priority-based admission | ✅ POC | `jes-gate` — reads WLM signal, blocks by importance |
+| Job chaining | 📋 | — |
+| Structured result delivery | 📋 | — |
+
+**jes-gate** wraps any cron command with an importance level. Before
+execution, it reads `~/.hermes/wlm_signal.txt` (written by the wlm-token
+hook) and blocks if the WLM signal exceeds the job's importance threshold:
+
+```
+importance=1: only blocked at BLACK  (critical — never starved)
+importance=2: blocked at RED or BLACK
+importance=3: blocked at YELLOW, RED, or BLACK  (batch yields to online)
+```
+
+When wlmd is not running, all jobs pass — enforcement is off, not fail-closed.
 
 ---
 
@@ -673,7 +689,7 @@ agents hardcode localhost:PORT.
 | §3 Security — Trust scoring | *(not yet implemented)* | 📋 | — |
 | §4 Audit — Trace | [a2a-go PR #365](https://github.com/a2aproject/a2a-go/pull/365) | ✅ Complete | 10 unit tests |
 | §5 XVal | *(methodology only)* | 📋 | — |
-| §6 JES | *(not started)* | 📋 | — |
+| §6 JES | [macs/integrations/jes-gate](https://github.com/deeparchi-ai/macs/tree/main/integrations/jes-gate) | ✅ POC | Manual verification (4 gate scenarios) |
 | §7 DFSMS | *(not started)* | 📋 | — |
 | §8 VTAM | *(not started)* | 📋 | — |
 
