@@ -119,7 +119,8 @@ Agents reach the kernel through two paths, matching IBM's online/batch split:
 ```
 
 Online requests flow through the MAEA middleware (routing, registry, session
-management) before hitting MACS. Batch jobs bypass the middleware entirely
+management) before hitting MACS. See the [MAEA Middleware Specification](maea-middleware.md).
+Batch jobs bypass the middleware entirely
 and land directly on MACS — they still consume WLM budget, are constrained by
 security, and write audit records. §6 JES manages this path.
 
