@@ -24,6 +24,8 @@ DM Hub (sg-architect :9900)
 | if-explorer | 9930 | DS v4-pro | 技术可行性 |
 | do-developer | 9912 | kimi-k2.7 | 编码实现 |
 
+> ⚠️ 生产环境部署时必须变更默认端口并配置防火墙规则，避免暴露默认攻击面。
+
 ## 部署
 
 需要 [Hermes Agent](https://github.com/NousResearch/hermes-agent) + [lark-cli](https://github.com/nousresearch/lark-cli)。

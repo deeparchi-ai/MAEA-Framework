@@ -169,6 +169,6 @@ agency-agents 是一个了不起的项目。它证明了市场对一个前提的
 
 ---
 
-*深度架构 · 邝谧*
+*深度架构 · DeepArchi Team*
 *2026 年 7 月*
 *[deeparchi.ai](https://deeparchi.ai)*
