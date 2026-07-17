@@ -158,7 +158,7 @@ sampling rate. Not equivalent to full tri-model validation.
 | **Gauge (§9)** | Monitors vendor health; triggers failover when degradation detected. |
 | **Warden (§12)** | Handles total vendor outage escalation. |
 
-**Implementation:** [deeparchi-ai/macs-xval-go](https://github.com/deeparchi-ai/macs-xval-go) — 11 tests (dual-model v0.1; tri-model upgrade pending)
+**Implementation:** [deeparchi-ai/macs-xval-go](https://github.com/deeparchi-ai/macs-xval-go) — 31 tests (tri-model v0.2)
 
 ---
 
@@ -261,7 +261,7 @@ degrade simultaneously, the cause is likely external (network, cloud
 provider), not vendor-specific. Gauge detects correlated degradation
 and escalates to Warden.
 
-**Implementation:** design spec; Go implementation pending
+**Implementation:** v0.1 Go package — 20 tests. Repository: [deeparchi-ai/macs-gauge-go](https://github.com/deeparchi-ai/macs-gauge-go)
 
 ---
 
@@ -284,7 +284,7 @@ and escalates to Warden.
 - **Seal** answers: "Who are you?" (identity, certificates, signatures)
 - **Sanctum** answers: "What are you allowed to do?" (access, trust, constraints)
 
-**Implementation:** design spec; Go implementation pending
+**Implementation:** v0.1 Go package — 19 tests. Repository: [deeparchi-ai/macs-seal-go](https://github.com/deeparchi-ai/macs-seal-go)
 
 ---
 
@@ -315,7 +315,7 @@ Relay broadcasts "B restored" → Agent A resumes delegation
 
 Without Relay: Agent A keeps delegating to a dead agent until timeout.
 
-**Implementation:** design spec; Go implementation pending
+**Implementation:** v0.1 Go package — 15 tests. Repository: [deeparchi-ai/macs-relay-go](https://github.com/deeparchi-ai/macs-relay-go)
 
 ---
 
@@ -360,7 +360,7 @@ policies:
 | L2 | Action required | Notify + auto-mitigate (restart, degrade) |
 | L3 | Critical | Notify + auto-mitigate + escalate to human after timeout |
 
-**Implementation:** design spec; Go implementation pending
+**Implementation:** v0.1 Go package — 12 tests. Repository: [deeparchi-ai/macs-warden-go](https://github.com/deeparchi-ai/macs-warden-go)
 
 ---
 
@@ -386,7 +386,7 @@ policies:
 | **Impaired** | Critical subsystem down; agents degraded |
 | **Down** | Kernel unresponsive |
 
-**Implementation:** design spec; Go implementation pending
+**Implementation:** v0.1 Go package — 10 tests. Repository: [deeparchi-ai/macs-pulse-go](https://github.com/deeparchi-ai/macs-pulse-go)
 
 ---
 
@@ -418,15 +418,15 @@ policies:
 | §3 | Sanctum | [deeparchi-ai/macs-sanctum-go](https://github.com/deeparchi-ai/macs-sanctum-go) | ✅ v0.1 · 🚧 trust | 13 |
 | §3b | Loom | [deeparchi-ai/macs-loom-go](https://github.com/deeparchi-ai/macs-loom-go) | ✅ v0.1 | 12 |
 | §4 | Chronicle | [a2a-go PR #377](https://github.com/a2aproject/a2a-go/pull/377) + [mcp-audit-go](https://github.com/deeparchi-ai/mcp-audit-go) + [chronicle-bridge-go](https://github.com/deeparchi-ai/macs-chronicle-bridge-go) + DUMP | ✅ | 68 |
-| §5 | XVal | [deeparchi-ai/macs-xval-go](https://github.com/deeparchi-ai/macs-xval-go) | 🚧 dual-model v0.1; tri-model upgrade | 11 |
+| §5 | XVal | [deeparchi-ai/macs-xval-go](https://github.com/deeparchi-ai/macs-xval-go) | ✅ tri-model v0.2 | 31 |
 | §6 | Cadence | [macs/integrations/jes-gate](https://github.com/deeparchi-ai/macs/tree/main/integrations/jes-gate) | ✅ POC | 4 |
 | §7 | Curator | [deeparchi-ai/macs-curator-go](https://github.com/deeparchi-ai/macs-curator-go) | ✅ v0.1 | 13 |
 | §8 | Nexus | [deeparchi-ai/macs-nexus-go](https://github.com/deeparchi-ai/macs-nexus-go) | ✅ v0.1 | 16 |
-| §9 | Gauge | *(design spec)* | 📋 | — |
-| §10 | Seal | *(design spec)* | 📋 | — |
-| §11 | Relay | *(design spec)* | 📋 | — |
-| §12 | Warden | *(design spec)* | 📋 | — |
-| §13 | Pulse | *(design spec)* | 📋 | — |
+| §9 | Gauge | [deeparchi-ai/macs-gauge-go](https://github.com/deeparchi-ai/macs-gauge-go) | ✅ v0.1 | 20 |
+| §10 | Seal | [deeparchi-ai/macs-seal-go](https://github.com/deeparchi-ai/macs-seal-go) | ✅ v0.1 | 19 |
+| §11 | Relay | [deeparchi-ai/macs-relay-go](https://github.com/deeparchi-ai/macs-relay-go) | ✅ v0.1 | 15 |
+| §12 | Warden | [deeparchi-ai/macs-warden-go](https://github.com/deeparchi-ai/macs-warden-go) | ✅ v0.1 | 12 |
+| §13 | Pulse | [deeparchi-ai/macs-pulse-go](https://github.com/deeparchi-ai/macs-pulse-go) | ✅ v0.1 | 10 |
 
 ---
 
