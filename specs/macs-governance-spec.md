@@ -1,6 +1,6 @@
 # MACS — Agent Operating System Specification
 
-> **Version:** 2.0 · **Status:** Draft · **Last Updated:** 2026-07-03
+> **Version:** 2.1 · **Status:** Draft · **Last Updated:** 2026-07-18
 >
 > MACS (Multi-Agent Coordination System) is the Agent OS for multi-agent
 > networks. It provides the six subsystems every multi-agent deployment
@@ -139,6 +139,89 @@ reached in [A2A issue #1672][1672]: the card carries authenticity primitives;
 behavioral evidence rides alongside, keyed to the same identifier.
 
 [1672]: https://github.com/a2aproject/A2A/issues/1672
+
+### 1.6 Subsystem Topology
+
+The eight subsystems form a layered dependency graph. Arrows indicate runtime
+call dependencies (X → Y means X calls Y at runtime):
+
+```
+                         ┌─────────────────┐
+                         │   §8 VTAM       │
+                         │ Protocol        │
+                         │ Admission       │
+                         └────────┬────────┘
+                                  │ routes inbound calls
+         ┌────────────────────────┼────────────────────────┐
+         │                        │                        │
+         ▼                        ▼                        ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   §2 WLM        │    │   §3 Security    │    │   §6 JES        │
+│ Resource        │◄───│ Access Control   │    │ Batch           │
+│ Scheduling      │    │ + Trust Scoring  │    │ Scheduling      │
+└────────┬────────┘    └────────┬────────┘    └────────┬────────┘
+         │                      │                      │
+         │    ┌─────────────────┼──────────────────┐   │
+         │    │                 │                  │   │
+         ▼    ▼                 ▼                  ▼   ▼
+┌─────────────────────────────────────────────────────────┐
+│                    MACS Kernel                           │
+│  · Token arbitration  · Circuit breaker  · Audit writer  │
+│  · Trace span passing · Brake protocol                  │
+└────────────┬────────────────────────────────────┬───────┘
+             │                                    │
+             ▼                                    ▼
+┌─────────────────────┐              ┌─────────────────────┐
+│   §5 XVal           │              │   §4 Audit (SMF)    │
+│ Cross-Validation    │              │ Immutable Trail     │
+│ (subjective agents) │              │ + Decision Receipts │
+└─────────────────────┘              └─────────────────────┘
+                                                │
+                                                ▼
+                                    ┌─────────────────────┐
+                                    │   §7 DFSMS          │
+                                    │ Knowledge Lifecycle │
+                                    │ + Memory Compression│
+                                    └─────────────────────┘
+```
+
+**Dependency rules:**
+
+| From | To | Why |
+|------|----|-----|
+| All subsystems | Kernel | Only path to agents. No subsystem calls agents directly. |
+| Kernel | §4 Audit | Every decision produces an audit record. |
+| §2 WLM | §3 Security | L1 agents have guaranteed floor allocation. |
+| §3 Security | §5 XVal | XVal disagreement rate feeds trust scoring. |
+| §5 XVal | §2 WLM | Cross-validation doubles token cost; WLM accounts for it. |
+| §6 JES | §2 WLM | Batch and online share the same token pool. |
+| §7 DFSMS | §4 Audit | Audit records feed into knowledge lifecycle expiration. |
+
+**Startup order:** §8 VTAM → §2 WLM → §3 Security → §6 JES → Kernel → §4 Audit → §5 XVal → §7 DFSMS.
+
+### 1.7 Failure Model
+
+MACS subsystems follow a **fail-open** default — a failed subsystem degrades
+functionality but does not block the agent. The one exception is §3 Security
+Layer 4 (hard constraints / Genes), which is **fail-closed** (a security
+boundary violation must stop execution).
+
+| Subsystem failure | Blast radius | Agent impact |
+|-------------------|-------------|--------------|
+| **WLM (§2)** down | Token budget enforcement stops | All agents run at full budget (degraded governance, not blocked) |
+| **Security (§3)** L1-L3 down | Access control unavailable | All agents run as L1 (degraded governance) |
+| **Security (§3)** Gene violation | Circuit breaker trips | Affected agent disabled; human review required |
+| **Audit (§4)** down | Trace records lost | Agents continue; audit gap logged |
+| **XVal (§5)** down | No cross-validation | Subjective agent outputs pass without verification |
+| **Kernel** down | All subsystems disconnected | **Total stop** — kernel is the SPOF |
+| **DFSMS (§7)** down | Knowledge artifacts not managed | Memory grows unbounded; no data loss |
+| **VTAM (§8)** down | No new connections | Existing agent sessions continue; new connections rejected |
+
+The Kernel is the single point of failure by design — it is the only path from
+subsystems to agents. Mitigation: the Kernel is a thin in-process layer
+(<1000 lines, <1ms per arbitration), minimizing failure surface. A separate
+watchdog process monitors kernel health and triggers a restart if the kernel
+becomes unresponsive (>5s without a heartbeat).
 
 ---
 
@@ -431,18 +514,44 @@ reconstructs the full delegation topology for post-hoc analysis.
 ### 4.3 Propagation
 
 Trace context propagates across agent boundaries via A2A ServiceParams
-headers, encoded as `trace_id;span_id;parent_span_id;agent_id`.
+headers, encoded as a [W3C traceparent](https://www.w3.org/TR/trace-context/):
 
 ```
-HTTP header:  a2a-trace: abc123...;def456...;;agent-a    (root span)
-              a2a-trace: abc123...;ghi789...;def456...;agent-b  (child span)
+ServiceParams: a2a-traceparent: 00-{trace_id}-{span_id}-{flags}
+
+Example:
+  00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01  (root span)
+  00-0af7651916cd43dd8448eb211c80319c-7b8acd6b9203331e-01  (child span)
 ```
 
 Server interceptors create spans on inbound calls. Client interceptors
-read the current span from context, create a child, and propagate the header
-to the next hop.
+read the current span from context, create a child, and propagate the
+traceparent to the next hop.
 
-### 4.4 Subsystem Integration
+Backward compatibility: implementations SHOULD also accept the legacy
+semicolon format (`trace_id;span_id;parent_span_id;agent_id`) for
+interoperability with existing deployments.
+
+### 4.4 Cross-Protocol Bridge
+
+When an A2A agent calls an MCP tool, trace context propagates via
+`params._meta.traceparent` (a reserved key in the MCP specification):
+
+```go
+// A2A → MCP
+tc := trace.BridgeToMCP(ctx)
+mcpReq.Params.Meta["traceparent"] = tc["traceparent"]
+
+// MCP → A2A
+ctx = trace.BridgeFromMCP(ctx, traceparent, agentID)
+```
+
+This creates a unified audit chain: orchestrator → A2A delegation →
+MCP tool call → admission check → result — all linked by a single
+trace-id. See the [cross-protocol bridge specification](https://github.com/deeparchi-ai/macs/blob/main/trace-bridge/spec.md)
+for the full bidirectional mapping.
+
+### 4.5 Subsystem Integration
 
 Every MACS subsystem writes to the audit trail through the kernel — not
 directly. The kernel guarantees immutability, timestamp ordering, and
@@ -456,16 +565,19 @@ entire OS.
 | **XVal (§5)** | Every verification verdict (consensus/partial/disagree), escalation events |
 | **JES (§6)** | Batch job lifecycle (submit → start → complete/fail), priority changes |
 
-### 4.5 Non-Goals
+### 4.6 Non-Goals
 
 - Centralized storage (agents may store traces locally or in a shared log)
 - Real-time monitoring (traces are for post-hoc audit, not active alerting)
 - Full-content capture (traces record metadata; payload capture is per-deployment)
 
-### 4.6 Implementation
+### 4.7 Implementation
 
-- **Go package**: `a2aext/trace` in [a2a-go](https://github.com/a2aproject/a2a-go) (PR [#365](https://github.com/a2aproject/a2a-go/pull/365))
-- **Tests**: 10 unit tests, three-hop propagation validated
+- **Go package**: `a2aext/trace` in [a2a-go](https://github.com/a2aproject/a2a-go)
+  - Original proposal: PR [#365](https://github.com/a2aproject/a2a-go/pull/365)
+  - W3C traceparent + bridge hooks: PR [#377](https://github.com/a2aproject/a2a-go/pull/377) — 20 tests, zero regressions
+- **Cross-protocol bridge**: [deeparchi-ai/trace-bridge-go](https://github.com/deeparchi-ai/trace-bridge-go) — 19 tests
+- **Audit record contract**: [deeparchi-ai/mcp-audit-go](https://github.com/deeparchi-ai/mcp-audit-go) — MCP SEP #3004, 10 tests, cross-language KAT match
 
 ---
 
@@ -686,17 +798,54 @@ agents hardcode localhost:PORT.
 
 | Subsystem | Implementation | Status | Tests |
 |-----------|---------------|:------:|:-----:|
-| §2 WLM — CPU | [deeparchi-ai/wlm](https://github.com/deeparchi-ai/wlm) | ✅ Complete | 7 unit, E2E verified |
-| §2 WLM — Token | same repo | 🚧 Design | Planned: 7 boundary tests |
-| §3 Security — Genes | MACS kernel (embedded in Hermes Gateway) | ✅ Complete | Gateway-level |
+| §2 WLM — CPU | [deeparchi-ai/wlm](https://github.com/deeparchi-ai/wlm) | ✅ Complete | 34 unit tests |
+| §2 WLM — Token | same repo | 🚧 Design | — |
+| §3 Security — Spec | [macs specs/security-model.md](https://github.com/deeparchi-ai/macs/blob/main/specs/security-model.md) | ✅ Design spec | — |
+| §3 Security — Go impl | [deeparchi-ai/macs-security-go](https://github.com/deeparchi-ai/macs-security-go) | ✅ v0.1 | 13 tests |
 | §3 Security — Trust scoring | *(not yet implemented)* | 📋 | — |
-| §4 Audit — Trace | [a2a-go PR #365](https://github.com/a2aproject/a2a-go/pull/365) | ✅ Complete | 10 unit tests |
+| §4 Audit — Trace (W3C) | [a2a-go PR #377](https://github.com/a2aproject/a2a-go/pull/377) | ✅ Ready | 20 tests |
+| §4 Audit — MCP records | [deeparchi-ai/mcp-audit-go](https://github.com/deeparchi-ai/mcp-audit-go) | ✅ Complete | 10 tests, KAT match |
+| §4 Audit — Bridge | [deeparchi-ai/trace-bridge-go](https://github.com/deeparchi-ai/trace-bridge-go) | ✅ Complete | 19 tests |
+| §4 Audit — DUMP | [macs dump](https://github.com/deeparchi-ai/macs) | ✅ v0 | Python, Hermes plugin |
 | §5 XVal | *(methodology only)* | 📋 | — |
-| §6 JES | [macs/integrations/jes-gate](https://github.com/deeparchi-ai/macs/tree/main/integrations/jes-gate) | ✅ POC | Manual verification (4 gate scenarios) |
-| §7 DFSMS | *(not started)* | 📋 | — |
-| §8 VTAM | *(not started)* | 📋 | — |
+| §6 JES | [macs/integrations/jes-gate](https://github.com/deeparchi-ai/macs/tree/main/integrations/jes-gate) | ✅ POC | 4 gate scenarios |
+| §7 DFSMS | *(design spec only)* | 📋 | — |
+| §8 VTAM | *(design spec only)* | 📋 | — |
+
+---
+
+## Appendix C: Glossary
+
+| Term | Definition |
+|------|-----------|
+| **A2A** | Agent-to-Agent protocol. Standard for inter-agent communication. |
+| **Agent Card** | Machine-readable agent identity document at `/.well-known/agent.json`. |
+| **Arbiter** | Kernel component that applies WLM scheduling decisions (token rate limits, CPU weights). |
+| **Brake Protocol** | Cluster-wide emergency stop signal. Propagates to all agents in <1s. |
+| **Burn Rate** | Token consumption velocity. Triggers WLM degradation when exceeding budget trajectory. |
+| **CICS** | IBM Customer Information Control System — transaction processing monitor. |
+| **Decision Receipt** | Immutable, verifiable record of a security-relevant decision (approve/deny/escalate). |
+| **DFSMS** | IBM Data Facility Storage Management Subsystem — storage lifecycle management. |
+| **DUMP** | MACS recoverability artifact: a frozen snapshot of an agent's decision chain. |
+| **Fail-Open** | Default MACS behavior: subsystem failure degrades functionality, does not block agents. |
+| **Fail-Closed** | Exception for Security Layer 4 (Genes): violation blocks execution. |
+| **Gene** | Hard security constraint encoded in the MACS kernel. Cannot be bypassed by any code path. |
+| **JES** | IBM Job Entry Subsystem — batch job scheduling and management. |
+| **Kernel** | MACS core (≈ z/OS BCP). Only path from subsystems to agents. Thin in-process layer. |
+| **L1 / L2 / L3** | MACS security levels: L1=highest (architecture/strategy), L2=high (core data/code), L3=standard (public info). |
+| **MCP** | Model Context Protocol. Standard for agent-to-tool communication. |
+| **MAEA** | Multi-Agent Enterprise Architecture — the architecture framework MACS implements. |
+| **PSI** | Linux Pressure Stall Information — kernel-level resource contention metrics. |
+| **RACF** | IBM Resource Access Control Facility — security manager. |
+| **SMF** | IBM System Management Facilities — unified audit record system. |
+| **Span** | Single step in a multi-hop agent delegation chain (W3C Trace Context). |
+| **Traceparent** | W3C standard header: `version-trace_id-span_id-flags`. MACS trace propagation format. |
+| **URID** | IBM Unit of Recovery ID — transaction identifier propagated across CICS→DB2→MQ boundaries. Analogous to W3C trace-id. |
+| **VTAM** | IBM Virtual Telecommunications Access Method — network admission and protocol routing. |
+| **WLM** | IBM Workload Manager — goal-oriented resource scheduler. MACS §2. |
+| **XVal** | Cross-Validation. MACS §5: dual-model verification for subjective agent outputs. |
 
 ---
 
 > *MAEA Framework · DeepArchi Team*
-> *2026-07-03 · [deeparchi.ai](https://deeparchi.ai)*
+> *2026-07-18 · [deeparchi.ai](https://deeparchi.ai)*
