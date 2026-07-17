@@ -803,11 +803,12 @@ agents hardcode localhost:PORT.
 | §3 Security — Spec | [macs specs/security-model.md](https://github.com/deeparchi-ai/macs/blob/main/specs/security-model.md) | ✅ Design spec | — |
 | §3 Security — Go impl | [deeparchi-ai/macs-security-go](https://github.com/deeparchi-ai/macs-security-go) | ✅ v0.1 | 13 tests |
 | §3 Security — Trust scoring | *(not yet implemented)* | 📋 | — |
+| §3 State — Rollback | [deeparchi-ai/macs-state-go](https://github.com/deeparchi-ai/macs-state-go) | ✅ v0.1 | 12 tests |
 | §4 Audit — Trace (W3C) | [a2a-go PR #377](https://github.com/a2aproject/a2a-go/pull/377) | ✅ Ready | 20 tests |
 | §4 Audit — MCP records | [deeparchi-ai/mcp-audit-go](https://github.com/deeparchi-ai/mcp-audit-go) | ✅ Complete | 10 tests, KAT match |
 | §4 Audit — Bridge | [deeparchi-ai/trace-bridge-go](https://github.com/deeparchi-ai/trace-bridge-go) | ✅ Complete | 19 tests |
 | §4 Audit — DUMP | [macs dump](https://github.com/deeparchi-ai/macs) | ✅ v0 | Python, Hermes plugin |
-| §5 XVal | *(methodology only)* | 📋 | — |
+| §5 XVal | [deeparchi-ai/macs-xval-go](https://github.com/deeparchi-ai/macs-xval-go) | ✅ v0.1 | 11 tests |
 | §6 JES | [macs/integrations/jes-gate](https://github.com/deeparchi-ai/macs/tree/main/integrations/jes-gate) | ✅ POC | 4 gate scenarios |
 | §7 DFSMS | *(design spec only)* | 📋 | — |
 | §8 VTAM | *(design spec only)* | 📋 | — |
