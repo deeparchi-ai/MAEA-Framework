@@ -810,8 +810,8 @@ agents hardcode localhost:PORT.
 | §4 Audit — DUMP | [macs dump](https://github.com/deeparchi-ai/macs) | ✅ v0 | Python, Hermes plugin |
 | §5 XVal | [deeparchi-ai/macs-xval-go](https://github.com/deeparchi-ai/macs-xval-go) | ✅ v0.1 | 11 tests |
 | §6 JES | [macs/integrations/jes-gate](https://github.com/deeparchi-ai/macs/tree/main/integrations/jes-gate) | ✅ POC | 4 gate scenarios |
-| §7 DFSMS | *(design spec only)* | 📋 | — |
-| §8 VTAM | *(design spec only)* | 📋 | — |
+| §7 DFSMS | [deeparchi-ai/macs-dfsms-go](https://github.com/deeparchi-ai/macs-dfsms-go) | ✅ v0.1 | 13 tests |
+| §8 VTAM | [deeparchi-ai/macs-vtam-go](https://github.com/deeparchi-ai/macs-vtam-go) | ✅ v0.1 | 16 tests |
 
 ---
 
