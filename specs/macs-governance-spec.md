@@ -414,14 +414,14 @@ policies:
 
 | § | Subsystem | Repository | Status | Tests |
 |:--:|-----------|-----------|:------:|:-----:|
-| §2 | Regulator | [deeparchi-ai/wlm](https://github.com/deeparchi-ai/wlm) | ✅ CPU · 🚧 Token | 34 |
-| §3 | Sanctum | [deeparchi-ai/macs-security-go](https://github.com/deeparchi-ai/macs-security-go) | ✅ v0.1 · 🚧 trust | 13 |
-| §3b | Loom | [deeparchi-ai/macs-state-go](https://github.com/deeparchi-ai/macs-state-go) | ✅ v0.1 | 12 |
-| §4 | Chronicle | [a2a-go PR #377](https://github.com/a2aproject/a2a-go/pull/377) + [mcp-audit-go](https://github.com/deeparchi-ai/mcp-audit-go) + [trace-bridge-go](https://github.com/deeparchi-ai/trace-bridge-go) + DUMP | ✅ | 68 |
+| §2 | Regulator | [deeparchi-ai/macs-regulator-go](https://github.com/deeparchi-ai/macs-regulator-go) | ✅ CPU · 🚧 Token | 34 |
+| §3 | Sanctum | [deeparchi-ai/macs-sanctum-go](https://github.com/deeparchi-ai/macs-sanctum-go) | ✅ v0.1 · 🚧 trust | 13 |
+| §3b | Loom | [deeparchi-ai/macs-loom-go](https://github.com/deeparchi-ai/macs-loom-go) | ✅ v0.1 | 12 |
+| §4 | Chronicle | [a2a-go PR #377](https://github.com/a2aproject/a2a-go/pull/377) + [mcp-audit-go](https://github.com/deeparchi-ai/mcp-audit-go) + [chronicle-bridge-go](https://github.com/deeparchi-ai/macs-chronicle-bridge-go) + DUMP | ✅ | 68 |
 | §5 | XVal | [deeparchi-ai/macs-xval-go](https://github.com/deeparchi-ai/macs-xval-go) | 🚧 dual-model v0.1; tri-model upgrade | 11 |
 | §6 | Cadence | [macs/integrations/jes-gate](https://github.com/deeparchi-ai/macs/tree/main/integrations/jes-gate) | ✅ POC | 4 |
-| §7 | Curator | [deeparchi-ai/macs-dfsms-go](https://github.com/deeparchi-ai/macs-dfsms-go) | ✅ v0.1 | 13 |
-| §8 | Nexus | [deeparchi-ai/macs-vtam-go](https://github.com/deeparchi-ai/macs-vtam-go) | ✅ v0.1 | 16 |
+| §7 | Curator | [deeparchi-ai/macs-curator-go](https://github.com/deeparchi-ai/macs-curator-go) | ✅ v0.1 | 13 |
+| §8 | Nexus | [deeparchi-ai/macs-nexus-go](https://github.com/deeparchi-ai/macs-nexus-go) | ✅ v0.1 | 16 |
 | §9 | Gauge | *(design spec)* | 📋 | — |
 | §10 | Seal | *(design spec)* | 📋 | — |
 | §11 | Relay | *(design spec)* | 📋 | — |
