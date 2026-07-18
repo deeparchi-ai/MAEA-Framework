@@ -390,6 +390,127 @@ policies:
 
 ---
 
+## §14 Console — Operator Console
+
+> IBM lineage: **TSO** (Time Sharing Option) + **ISPF** (Interactive System Productivity Facility)
+
+### Role
+
+Console is the operator-facing control plane for MACS. It provides a unified
+interface to all 13 kernel subsystems — status queries, agent lifecycle commands,
+policy editing, job output browsing — across three modes.
+
+### Three-Mode Architecture
+
+| Mode | z/OS Equivalent | Interface | Use Case |
+|------|:-------------:|-----------|----------|
+| **Interactive** | ISPF panels | Feishu interactive cards + Web dashboard | Human operator at Feishu / browser |
+| **Headless** | TSO CLIST / REXX | CLI (stdin/stdout REPL) | Scripting, cron, CI/CD pipeline |
+| **Embedded** | TSO Batch (IKJEFT01) | MCP server tool set | AI agent integration via MCP |
+
+### Command Menu
+
+```
+─── MACS Console ─────────────────────────
+ 0  Status      — 全系统状态一览 (Pulse)
+ 1  Agents      — Agent 列表 / 启停 / 重启 (Warden)
+ 2  Jobs        — 作业队列 / 输出查看 (Cadence)
+ 3  Audit       — 审计记录查询 (Chronicle)
+ 4  Metrics     — 实时指标面板 (Gauge)
+ 5  Identity    — Agent 身份管理 / 证书轮换 (Seal)
+ 6  Policies    — 策略查看 / 编辑 / 激活 (Warden)
+ 7  Log         — 系统日志浏览
+ X  Exit
+──────────────────────────────────────────
+```
+
+### Subsystem Read/Write Matrix
+
+| Subsystem | Console Reads | Console Writes |
+|-----------|:---:|:---:|
+| §13 Pulse | Health status, dependency graph | — |
+| §12 Warden | Policy list, agent status, escalation state | Start/stop/restart agent; edit/activate policies; manual escalate |
+| §6 Cadence | Job queue, job output | Submit job; cancel job; re-prioritize |
+| §4 Chronicle | Audit records (query by agent/time/trace) | — |
+| §9 Gauge | Metric summaries, alerts, correlation reports | — |
+| §10 Seal | Identity list, certificate status | Register agent; begin/complete rotation; revoke |
+| §2 Regulator | Token budget, importance class | — |
+| §3 Sanctum | Trust scores, access violations | — |
+| §7 Curator | Context tier status, storage usage | Trigger compression; force backup |
+
+### Headless CLI Contract
+
+Every Console command must surface in three forms with identical semantics:
+
+```
+1. Interactive:  SELECTION → sub-panel → action
+2. Headless CLI: macs-console <noun> <verb> [--flags]
+3. Embedded MCP: tool name = "macs_<noun>_<verb>"
+```
+
+**Headless examples:**
+
+```bash
+macs-console status                    # system health overview
+macs-console agent list                # all registered agents
+macs-console agent start <lu-name>     # start agent with Loom fork-point
+macs-console agent stop <lu-name>      # graceful stop
+macs-console agent restart <lu-name>   # crash recovery path
+macs-console job list [--status=<s>]   # cadence job queue
+macs-console job output <job-id>       # job result
+macs-console audit query [--agent=<a>] [--since=<t>] [--trace=<id>]
+macs-console metric show [--subsystem=<s>] [--window=<d>]
+macs-console identity list [--status=<s>]
+macs-console identity register --lu=<name> --card=<url> --key=<hash>
+macs-console identity rotate --lu=<name> --new-key=<hash>
+macs-console identity revoke --lu=<name> --reason=<text>
+macs-console policy list
+macs-console policy edit --name=<n> --action=<a>
+macs-console policy activate --name=<n>
+```
+
+### MCP Tool Contract (Embedded Mode)
+
+```json
+{
+  "server": "macs-console",
+  "tools": [
+    {"name": "macs_status",           "description": "全系统 14 子系统健康状态"},
+    {"name": "macs_agent_list",       "description": "列出所有注册 Agent 及状态"},
+    {"name": "macs_agent_control",    "description": "Agent 启停/重启"},
+    {"name": "macs_job_list",         "description": "查询 Cadence 作业队列"},
+    {"name": "macs_job_output",       "description": "获取指定作业输出"},
+    {"name": "macs_audit_query",      "description": "按条件查询审计记录"},
+    {"name": "macs_metric_show",      "description": "查询 Gauge 指标"},
+    {"name": "macs_identity_list",    "description": "列出 Seal 管理的 Agent 身份"},
+    {"name": "macs_identity_manage",  "description": "注册/轮换/撤销 Agent 身份"},
+    {"name": "macs_policy_list",      "description": "列出 Warden 策略"},
+    {"name": "macs_policy_manage",    "description": "编辑/激活 Warden 策略"}
+  ]
+}
+```
+
+### Implementation
+
+**Repository:** [deeparchi-ai/macs-console-go](https://github.com/deeparchi-ai/macs-console-go)
+
+**v0.1 scope:**
+
+| Component | Lines (est.) | Description |
+|-----------|:--:|------|
+| `pkg/console/cli.go` | ~150 | CLI router + REPL loop (headless mode) |
+| `pkg/console/commands.go` | ~300 | All command handlers with subsystem integration |
+| `pkg/console/mcp.go` | ~120 | MCP server tool definitions |
+| `pkg/console/status.go` | ~80 | Unified status query across Pulse + Gauge + Regulator |
+| `pkg/console/agentctl.go` | ~100 | Agent lifecycle: list / start / stop / restart |
+| `pkg/console/job.go` | ~80 | Cadence job queue + output |
+| `pkg/console/audit.go` | ~80 | Chronicle audit record queries |
+| `pkg/console/identity.go` | ~80 | Seal identity management commands |
+| `pkg/console/policy.go` | ~80 | Warden policy list / edit / activate |
+| Tests | ~320 | 20+ tests covering all 8 command groups |
+
+
+
 ## Appendix A: z/OS Subsystem Mapping
 
 | MACS | z/OS | Inherited from IBM | Unique to Agent OS |
@@ -407,6 +528,7 @@ policies:
 | §11 Relay | XCF | Cluster membership, shared state, broadcast | Inter-agent event pub/sub, state convergence |
 | §12 Warden | ARM + System Automation | Crash recovery, policy-driven operations | Model outage escalation, human-in-the-loop policies |
 | §13 Pulse | Health Checker | Subsystem health checks, startup verification | Dependency-aware health propagation, watchdog integration |
+| §14 Console | TSO + ISPF | Interactive command environment, full-screen panels | Three-mode (Interactive/Headless/Embedded), Feishu + CLI + MCP, unified control plane |
 
 ---
 
@@ -427,6 +549,7 @@ policies:
 | §11 | Relay | [deeparchi-ai/macs-relay-go](https://github.com/deeparchi-ai/macs-relay-go) | ✅ v0.1 | 15 |
 | §12 | Warden | [deeparchi-ai/macs-warden-go](https://github.com/deeparchi-ai/macs-warden-go) | ✅ v0.1 | 12 |
 | §13 | Pulse | [deeparchi-ai/macs-pulse-go](https://github.com/deeparchi-ai/macs-pulse-go) | ✅ v0.1 | 10 |
+| §14 | Console | *(design spec)* | 📋 | — |
 
 ---
 
@@ -456,6 +579,11 @@ policies:
 | **Traceparent** | W3C standard header: `version-trace_id-span_id-flags`. |
 | **Warden** | MACS §12: crash recovery + policy-driven operations + human escalation (ARM + SA). |
 | **XVal** | MACS §5: **tri-model** cross-validation with 2/3 majority adjudication. |
+| **Console** | MACS §14: operator control plane. Three-mode (Interactive/Headless/Embedded). TSO + ISPF lineage. |
+| **TSO** | Time Sharing Option. z/OS interactive command environment. Console Headless mode inherits its REPL paradigm. |
+| **ISPF** | Interactive System Productivity Facility. z/OS full-screen panel manager. Console Interactive mode inherits its menu navigation. |
+| **Headless** | Console mode: CLI via stdin/stdout REPL. Scriptable, cron-compatible. TSO CLIST equivalent. |
+| **Embedded** | Console mode: MCP server tool set. AI agent calls Console as a tool. TSO Batch (IKJEFT01) equivalent. |
 
 ---
 
