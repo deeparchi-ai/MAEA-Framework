@@ -515,6 +515,7 @@ macs-console policy activate --name=<n>
 
 | MACS | z/OS | Inherited from IBM | Unique to Agent OS |
 |------|------|:---:|:---:|
+| **Kernel** | BCP (Base Control Program) — Dispatcher + SVC + SRB + Lock Manager | Work-unit dispatch, system-call gate, asynchronous scheduling, concurrency control | Unified admission (Arbiter), circuit breaker (Brake), audit hook registry (Audit), W3C traceparent (Trace), agent context lock (Lock) |
 | §2 Regulator | WLM | Goal arbitration, importance classes | Token budget + model failover |
 | §3 Sanctum | RACF | L1/L2/L3 levels, cross-level rules | Behavioral trust scoring, drift detection |
 | §3b Loom | CICS Syncpoint | Two-phase commit, UOW | Causal-DAG contamination detection, fork-point replay |
