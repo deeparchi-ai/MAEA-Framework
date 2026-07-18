@@ -537,24 +537,38 @@ macs-console policy activate --name=<n>
 
 | Layer | Component | Repository | Status | Tests |
 |-------|-----------|-----------|:------:|:-----:|
-| **0** | **Kernel** | [deeparchi-ai/macs-kernel-go](https://github.com/deeparchi-ai/macs-kernel-go) | ✅ v0.1 | 31 |
+| **0** | **Kernel** | [deeparchi-ai/macs-kernel-go](https://github.com/deeparchi-ai/macs-kernel-go) | ✅ v0.2 | 49 |
 
 | § | Subsystem | Repository | Status | Tests |
 |:--:|-----------|-----------|:------:|:-----:|
 | §2 | Regulator | [deeparchi-ai/macs-regulator-go](https://github.com/deeparchi-ai/macs-regulator-go) | ✅ CPU · 🚧 Token | 34 |
 | §3 | Sanctum | [deeparchi-ai/macs-sanctum-go](https://github.com/deeparchi-ai/macs-sanctum-go) | ✅ v0.1 · 🚧 trust | 13 |
 | §3b | Loom | [deeparchi-ai/macs-loom-go](https://github.com/deeparchi-ai/macs-loom-go) | ✅ v0.1 | 12 |
-| §4 | Chronicle | [a2a-go PR #377](https://github.com/a2aproject/a2a-go/pull/377) + [mcp-audit-go](https://github.com/deeparchi-ai/mcp-audit-go) + [chronicle-bridge-go](https://github.com/deeparchi-ai/macs-chronicle-bridge-go) + DUMP | ✅ | 68 |
-| §5 | XVal | [deeparchi-ai/macs-xval-go](https://github.com/deeparchi-ai/macs-xval-go) | ✅ tri-model v0.2 | 31 |
-| §6 | Cadence | [macs/integrations/jes-gate](https://github.com/deeparchi-ai/macs/tree/main/integrations/jes-gate) | ✅ POC | 4 |
+| §4 | Chronicle | [a2a-go PR #377](https://github.com/a2aproject/a2a-go/pull/377) + [mcp-audit-go](https://github.com/deeparchi-ai/mcp-audit-go) + [chronicle-bridge-go](https://github.com/deeparchi-ai/macs-chronicle-bridge-go) | ✅ | 68 |
+| §5 | XVal | [deeparchi-ai/macs-xval-go](https://github.com/deeparchi-ai/macs-xval-go) | ✅ v0.2 | 31 |
+| §6 | Cadence | [deeparchi-ai/macs-cadence-go](https://github.com/deeparchi-ai/macs-cadence-go) | ✅ v0.1 | 23 |
 | §7 | Curator | [deeparchi-ai/macs-curator-go](https://github.com/deeparchi-ai/macs-curator-go) | ✅ v0.1 | 13 |
 | §8 | Nexus | [deeparchi-ai/macs-nexus-go](https://github.com/deeparchi-ai/macs-nexus-go) | ✅ v0.1 | 16 |
 | §9 | Gauge | [deeparchi-ai/macs-gauge-go](https://github.com/deeparchi-ai/macs-gauge-go) | ✅ v0.1 | 20 |
 | §10 | Seal | [deeparchi-ai/macs-seal-go](https://github.com/deeparchi-ai/macs-seal-go) | ✅ v0.1 | 19 |
 | §11 | Relay | [deeparchi-ai/macs-relay-go](https://github.com/deeparchi-ai/macs-relay-go) | ✅ v0.1 | 15 |
-| §12 | Warden | [deeparchi-ai/macs-warden-go](https://github.com/deeparchi-ai/macs-warden-go) | ✅ v0.1 | 12 |
+| §12 | Warden | [deeparchi-ai/macs-warden-go](https://github.com/deeparchi-ai/macs-warden-go) | ✅ v0.1 | 13 |
 | §13 | Pulse | [deeparchi-ai/macs-pulse-go](https://github.com/deeparchi-ai/macs-pulse-go) | ✅ v0.1 | 10 |
 | §14 | Console | [deeparchi-ai/macs-console-go](https://github.com/deeparchi-ai/macs-console-go) | ✅ v0.1 | 36 |
+
+### POC Integration
+
+| # | Scenario | Subsystems | Tests |
+|:--:|------|------|:--:|
+| POC-1 | Tri-model divergence → failover | XVal + Gauge + Warden + Chronicle | 7 |
+| POC-2 | Agent crash → recovery → replay | Warden + Relay + Curator + Loom + Chronicle | 7 |
+| POC-3 | Identity lifecycle | Seal + Sanctum | 7 |
+| POC-4 | Cluster coordination | Relay + Warden + Pulse | 6 |
+| POC-5 | Token budget policy chain | Warden + Regulator | 5 |
+| POC-6 | Cross-vendor correlation | Gauge + Warden + XVal | 5 |
+| **Total** | | **14 subsystems covered** | **30** |
+
+> POC tests live in [macs/poc/](https://github.com/deeparchi-ai/macs/tree/main/poc) · `go test ./poc/...` runs all 30 cross-subsystem integration scenarios.
 
 ---
 
