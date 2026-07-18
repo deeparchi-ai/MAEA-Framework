@@ -541,8 +541,8 @@ macs-console policy activate --name=<n>
 
 | § | Subsystem | Repository | Status | Tests |
 |:--:|-----------|-----------|:------:|:-----:|
-| §2 | Regulator | [deeparchi-ai/macs-regulator-go](https://github.com/deeparchi-ai/macs-regulator-go) | ✅ CPU · 🚧 Token | 34 |
-| §3 | Sanctum | [deeparchi-ai/macs-sanctum-go](https://github.com/deeparchi-ai/macs-sanctum-go) | ✅ v0.1 · 🚧 trust | 13 |
+| §2 | Regulator | [deeparchi-ai/macs-regulator-go](https://github.com/deeparchi-ai/macs-regulator-go) | ✅ v0.1 | 34 |
+| §3 | Sanctum | [deeparchi-ai/macs-sanctum-go](https://github.com/deeparchi-ai/macs-sanctum-go) | ✅ v0.2 | 28 |
 | §3b | Loom | [deeparchi-ai/macs-loom-go](https://github.com/deeparchi-ai/macs-loom-go) | ✅ v0.1 | 12 |
 | §4 | Chronicle | [a2a-go PR #377](https://github.com/a2aproject/a2a-go/pull/377) + [mcp-audit-go](https://github.com/deeparchi-ai/mcp-audit-go) + [chronicle-bridge-go](https://github.com/deeparchi-ai/macs-chronicle-bridge-go) | ✅ | 68 |
 | §5 | XVal | [deeparchi-ai/macs-xval-go](https://github.com/deeparchi-ai/macs-xval-go) | ✅ v0.2 | 31 |
