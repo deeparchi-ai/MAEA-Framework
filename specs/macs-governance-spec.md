@@ -549,7 +549,7 @@ macs-console policy activate --name=<n>
 | §11 | Relay | [deeparchi-ai/macs-relay-go](https://github.com/deeparchi-ai/macs-relay-go) | ✅ v0.1 | 15 |
 | §12 | Warden | [deeparchi-ai/macs-warden-go](https://github.com/deeparchi-ai/macs-warden-go) | ✅ v0.1 | 12 |
 | §13 | Pulse | [deeparchi-ai/macs-pulse-go](https://github.com/deeparchi-ai/macs-pulse-go) | ✅ v0.1 | 10 |
-| §14 | Console | *(design spec)* | 📋 | — |
+| §14 | Console | [deeparchi-ai/macs-console-go](https://github.com/deeparchi-ai/macs-console-go) | ✅ v0.1 | 36 |
 
 ---
 
