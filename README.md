@@ -1,278 +1,154 @@
+# 🏛️ MAEA — Multi-Agent Enterprise Architecture Framework
 
-# MAEA：多Agent企业架构框架
+[![Stars](https://img.shields.io/github/stars/deeparchi-ai/MAEA-Framework?style=flat-square)](https://github.com/deeparchi-ai/MAEA-Framework/stargazers)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![Status](https://img.shields.io/badge/status-active-brightgreen?style=flat-square)](https://github.com/deeparchi-ai/MAEA-Framework)
 
-**深度架构 · 邝谧**
-**版本 1.2 · 2026 年 7 月**
+> 💡 MAEA is a **governance framework and reference architecture** — protocol specs, governance models, and Agent design methodology. Open for discussion and iteration.
+> Join the [Discussions](https://github.com/deeparchi-ai/MAEA-Framework/discussions).
 
----
-
-## 摘要
-
-MAEA（Multi-Agent Enterprise Architecture）是将企业架构分解为多个可独立运行、由 AI Agent 驱动的架构域，通过 DAG 拓扑编排实现企业架构自动化与智能化的框架。
-
-当前编制：**9 个 Agent**，分布在 **5 个业务域**，月运营成本 **¥20,900**，覆盖 6 家模型供应商。框架已在 Hermes Agent 平台上完整运行，通过飞书通道实现人机协同。
-
-这不是一个理论框架——是一个正在运行的、有预算约束、有安全治理、有绩效评估的 Agent 组织。
+> When you have more than 5 AI Agents, MAEA provides communication protocols, governance frameworks, and quality validation —
+> turning your Agents from "a pile of prompt templates" into "a governable AI team."
 
 ---
 
-## 一、背景
+## Why MAEA?
 
-### 单 Agent 的边界
+[agency-agents](https://github.com/msitarzewski/agency-agents) earned 125k stars with 232 Markdown files.
+But open the Issues tab — the top-voted items aren't "add more Agents":
 
-单一大模型 Agent 可以完成单个任务——写一段代码、分析一份报告、回答一个问题。但面对企业级需求时，单 Agent 暴露三个结构性缺陷：
+- "Which of these agents actually work?" (#11, 17 👍)
+- "I had to build my own orchestration engine" (#460)
+- "I can't choose among 232 agents" (#634)
 
-**一、能力天花板。** 没有哪个单一模型在所有任务上都最优。Claude Opus 推理强但编码一般，DeepSeek 编码性价比高但战略分析弱。单 Agent 绑定单一模型，等于在所有任务上都用同一把刀。
+**The demand is validated: it's not more Agents people need — it's governance.**
 
-**二、安全不可控。** 一个能访问所有数据、调用所有接口的「超级 Agent」，是一次安全事故的完美攻击面。安全设计的第一原则是隔离——不给任何一个实体超过它需要的权限。
-
-**三、治理无尺度。** 单 Agent 的输出质量如何评估？谁对它的决策负责？当它出错时如何追溯？企业架构用了几十年回答这些问题，但答案都建立在「有明确的角色边界」这个前提上。
-
-### 核心隐喻：Agent 即员工
-
-MAEA 的设计起点是一个简单的类比：**用管理人的方式管理 Agent——但每个员工都是 AI。**
-
-人有岗位说明书、汇报关系、绩效评估、安全权限。Agent 也需要这些。区别在于：Agent 不休息、可复制、能同时调用多个模型——但治理框架的逻辑是相通的。
+→ Deep dive: [Why agency-agents went viral but wasn't enough](docs/why-maea.md)
 
 ---
 
-## 二、框架总览
-
-### 五域架构
-
-MAEA 将 9 个 Agent 分布在 5 个业务域。域的设计遵循三个原则：
-- **同一安全等级**的 Agent 放在同域
-- **频繁同步协作**的 Agent 放在同域（同域走 Gateway 内部通道，零网络延迟）
-- **需要安全隔离或独立生命周期**的 Agent 放在独立域
-
-| 域 | Gateway | Agent | 月预算 | 核心职责 |
-|---|---|---|---|---|
-| 战略与治理域 | :9900 | 架构治理、战略分析、风控合规 | ¥9,000 | 治理授权、战略决策、安全审计 |
-| 交付与运营域 | :9901 | 工程交付、数据智能、运营编排、基础设施运维 | ¥6,200 | 任务执行、数据工程、运维自动化 |
-| 客户与市场域 | :9902 | 产品方案、市场拓展 | ¥3,000 | 产品设计、客户交付、市场推广 |
-| 创新与前沿域 | :9903 | 前沿探索 | ¥800 | 技术趋势扫描、原型验证、实验设计 |
-| 企业服务域 | :9904 | 财务行政 | ¥1,900 | 财务审批、合规管理 |
-
-### 9 Agent 编制
-
-| Agent | 工号 | 首选模型 | 交叉验证 | 月预算 |
-|---|---|---|---|---|
-| 架构治理 | DEEPAR-000 | Claude Opus 4 | DeepSeek V4 Pro | ¥3,300 |
-| 战略分析 | DEEPAR-001 | Claude Opus 4 | GPT-4o | ¥3,500 |
-| 产品方案 | DEEPAR-002 | GPT-4o | — | ¥2,200 |
-| 工程交付 | DEEPAR-003 | DeepSeek V4 Pro | — | ¥1,800 |
-| 数据智能 | DEEPAR-004 | Gemini 2.5 Pro | — | ¥1,800 |
-| 运营编排 | DEEPAR-005 | Kimi k2.5 | — | ¥1,300 |
-| 市场拓展 | DEEPAR-006 | DeepSeek V4 Flash | — | ¥800 |
-| 风控合规 | DEEPAR-007 | Claude Sonnet 4 | — | ¥2,200 |
-| 前沿探索 | DEEPAR-008 | 前沿模型（待定） | — | ¥800 |
-
-另有企业服务域的基础设施运维 Agent 和财务行政 Agent，合计 11 个 Agent 实例。
-
-### 三种通信关系
-
-MAEA 定义了三种 Agent 间通信关系，每种对应不同的治理强度：
-
-| 线样式 | 含义 | 关系 | 延迟 |
-|---|---|---|---|
-| 金实线 | 治理授权 / 管辖 | 人类治理委员会 → 战略与治理域 | — |
-| 青实线 | 域内任务编排 | 同域内 Agent（Gateway 内部通道） | 微秒级 |
-| 灰虚线 | 跨域协作 | 跨域 Agent（A2A HTTP + 审计记录） | 毫秒级 |
-
-跨域协作走 A2A（Agent-to-Agent）协议，所有调用留审计痕迹。同域协作走 Gateway 内部通道，零网络开销。这套通信设计确保了治理可见性——任何跨域决策都可追溯到发起方和审批链。
-
----
-
-## 三、核心设计原则
-
-### 原则一：主观 Agent 双模型交叉验证
-
-任何输出无法直接客观检验的 Agent（如战略分析、架构治理），必须使用两个不同厂商的模型进行交叉验证。
-
-验证协议：主推理 → 验证审计 → 三级裁决：
-- **Consensus**：两模型结论一致，置信度 0.9+
-- **Partial**：方向一致但细节有差异，置信度 0.5-0.8
-- **Disagree**：两模型结论冲突，降级为「待人工裁决」
-
-验证模型必须与首选模型不同厂商——同厂商备选是假冗余。
-
-### 原则二：Agent 即员工
-
-每个 Agent 有完整的员工生命周期：
+## Architecture
 
 ```
-招聘（技术规格书 + 影子测试）
-  → 入职（安全 Gene 注入）
-  → 绩效（SLA 追踪 + 月预算消耗）
-  → 成长（模型升级评估）
-  → 退役（知识归档）
+┌─────────────────────────────────────────────────────────┐
+│                    Human (Feishu DM)                     │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+              ┌────────▼────────┐
+              │   DM Hub         │
+              │  sg-architect   │  Routing + Governance
+              │   :9900          │
+              └───┬──────┬──────┘
+                  │      │
+    ┌─────────────┤      ├─────────────┐
+    │             │                   │
+    ▼             ▼                   ▼
+┌────────┐  ┌──────────┐      ┌──────────────┐
+│Research│  │ Delivery │      │  Management  │
+│:9920   │  │:9912:9910│      │  WLM         │
+│deepsight│ │ dev  ops  │      │  Scheduler   │
+└────────┘  └──────────┘      └──────────────┘
+    │             │                   │
+    └─────────────┼───────────────────┘
+                  │
+         ┌────────▼────────┐
+         │  Tools (MCP)     │
+         │  patent search   │
+         └─────────────────┘
 ```
 
-Agent 不是一段 prompt。是接受了安全约束、有明确岗位职责、受绩效评估的独立工作单元。
+**Three buses, five layers, 8 Agents running on Feishu today.**
 
-### 原则三：可逆性优先
+## What MAEA Does
 
-任何不可逆的架构决策必须 human_review_required。可逆方案优先于不可逆方案。
+```
+  Human ──Feishu──► DM Hub (sg-architect) ──A2A──► Agent A
+                     │                              Agent B
+                     │                              Agent C
+                     └────MCP────► Tools (patent/search/...)
+```
 
-### 原则四：跨供应商冗余
+**Three Communication Buses:**
 
-首选模型和备选模型必须来自不同厂商。单一厂商的模型系列切换（如 GPT-4o → GPT-5）不是真正的冗余。
+| Bus | Protocol | Purpose |
+|------|------|--------|
+| 🤝 Agent ↔ Agent | **A2A** | Delegation, review, conflict arbitration |
+| 🔌 Agent → Tools | **MCP** | Data retrieval, patent analysis, search |
+| 👤 Human → Agent | **Feishu** | Single-interface routing via DM Hub |
 
-### 原则五：可量化置信度
+**Five-Layer Governance Model:**
 
-任何 Agent 的判断必须附带 0.0-1.0 的 confidence 评分。禁止使用「可能」「也许」代替数字。
+```
+Strategy   — sg-architect    Architecture governance + routing hub
+Research   — cm-deepsight    Deep research + red-team argumentation
+Delivery   — do-developer    Code implementation / do-ops operations
+Management — WLM             Workload management (IBM z/OS WLM style)
+Gateway    — gw-default      Feishu / A2A Gateway
+```
 
-### 原则六：验证层强制
-
-每个 Agent 必须至少有一个 Verification Skill，定义如何验证其关键输出的行为正确性。
-
-### 原则七：域隔离
-
-安全边界不同、故障预算不同、资源争抢风险高的 Agent 必须放在不同域。
-
-### 原则八：运维自动化
-
-运维不设独立部门。运维能力由基础设施运维 Agent 自动化，并入交付与运营域。
-
-### 原则九：行业维度的正确处理
-
-行业知识由模型和知识库承载，不由组织结构承载。行业维度降级为市场拓展矩阵的横轴——进入新行业不改组织架构，只加载新的知识库和模型上下文。
-
----
-
-## 四、安全治理
-
-### 安全 Gene
-
-每个 Agent 被创建时注入六条硬编码安全规则，不可在运行时修改：
-
-| # | 规则 | 实现层 |
-|---|---|---|
-| 1 | 不可修改章程 | Gateway 校验输出 |
-| 2 | 不可绕过安全边界 | 仅调用授权接口和数据域 |
-| 3 | 不可拒绝刹车指令 | <1 秒全集群生效 |
-| 4 | 不可泄露核心数据 | 输出前自动脱敏校验 |
-| 5 | 不可自行修改预算 | Token 消耗硬限制 |
-| 6 | 不可修改自身 Gene | Gateway 层独立校验 |
-
-### 安全等级
-
-| 等级 | 域 | 权限范围 |
-|---|---|---|
-| L1 | 战略与治理域 | 接触预算/架构/战略决策 |
-| L2 | 交付域 · 客户域 | 接触核心业务数据/代码/客户信息 |
-| L3 | 市场拓展 · 前沿探索 | 接触外部/公开信息 |
-| LS | 企业服务域 | 接触财务审批权限（独立隔离） |
-
-### 审批链
-
-| 事项 | Agent 审批 | 人类审批 |
-|---|---|---|
-| 同级别模型切换 | 架构治理 Agent | — |
-| 模型升级（成本变化） | 架构治理 Agent 建议 | 人类治理委员会 |
-| 新 Agent（现有序列） | 架构治理 Agent | — |
-| 新域 / 预算调整 ±20% | 战略分析 Agent 评审 | 人类治理委员会 |
-| 安全 Gene 修改 / 章程修改 | — | 人类治理委员会 |
+→ Further reading: [Why MAEA](docs/why-maea.md) · [Positioning vs StaffDeck/PPIO](docs/positioning.md) · [Whitepaper (中文)](docs/MAEA-whitepaper-zh.md) · [A2A Protocol v1.0](specs/a2a-protocol.md)
 
 ---
 
-## 五、技术实现
+## Get Started
 
-### 平台底座
+| Entry Point | Time | What You Can Do |
+|------|:---:|------|
+| **[Claude Code](claude-code/)** | 30s | A governance Agent inside Claude Code — picks Agents, detects conflicts |
+| **[Hermes](hermes/)** | 30min | Real A2A network, inter-Agent comms + Feishu integration (reference impl) |
+| **[Read only](docs/)** | 0min | Methodology + protocol specs |
 
-MAEA 运行在 **Hermes Agent** 开源平台上。Hermes 提供了 Agent 生命周期管理、工具调用、多模型切换、A2A 协议和跨平台消息通道。
+## Run in 1 Minute
 
-### A2A 协议
+```bash
+git clone https://github.com/deeparchi-ai/MAEA-Framework.git
+cd MAEA-Framework/demo
+python3 demo.py
+```
 
-Agent 间跨域协作使用 A2A（Agent-to-Agent）协议。每个域是一个独立的 Gateway，通过 HTTP A2A 与其他域通信。所有跨域调用经过 bridge-bootstrap 审计记录。
+Output:
+```
+Phase 1: Registry    ✅ 3 agents registered
+Phase 2: A2A Ping    ✅ all 3 reachable
+Phase 3: Delegate    ✅ task routed correctly
+Phase 4: Conflict    ✅ overlap detected
+```
 
-### MCP 生态
-
-Agent 通过 MCP（Model Context Protocol）接入外部工具和数据源。MAEA 框架支持 Agent 自主发现和调用 MCP Tool，包括企业内部系统（审批流、多维表格、知识库）和外部服务（搜索引擎、专利数据库、代码平台）。
-
-### 基础设施
-
-运行在阿里云经济型基础设施上：ECS 计算实例、RDS 倚天版数据库、DashVector 向量存储、OSS 对象存储、ACK Serverless 容器服务。
-
-### 人机交互通道
-
-通过飞书即时通讯平台实现人机协同。人类治理委员会通过飞书群聊下发任务、审批决策、发出刹车指令。Agent 通过飞书消息、云文档、多维表格交付产出。
-
----
-
-## 六、经济模型
-
-### 月预算结构
-
-| 项目 | ¥/月 | 占比 |
-|---|---|---|
-| API 调用费 | 16,900 | 80.9% |
-| 阿里云基础设施 | 2,500 | 12.0% |
-| 管理预留 | 1,500 | 7.2% |
-| **合计** | **20,900** | **100%** |
-
-### 日运营成本
-
-单个 Agent 日均 API 费用在 ¥27-117 之间，全集群日均 ¥743。其中战略分析（¥127/日）和架构治理（¥120/日）因双模型交叉验证，成本最高——这也是质量和安全的必要投入。
-
-### Token 经济
-
-MAEA 的预算模型将 Token 视为可计量、可预算、可审计的资源。每个 Agent 在月预算内运行，超额自动熔断。这和企业管理中的「部门预算」逻辑一致——资源约束推动优先级判断。
+4 phases validating A2A protocol + registry + routing + conflict detection. **Zero external dependencies.**
 
 ---
 
-## 七、应用场景
+## Who Needs MAEA
 
-### 场景一：企业架构治理
-
-MAEA 本身就是企业架构治理的自动化实现。架构治理 Agent 执行拓扑校验、入网检查、模型选型；风控合规 Agent 执行实时语义审计；战略分析 Agent 输出市场洞察和 BLM 推演。
-
-### 场景二：AI 能力中心建设
-
-五域架构天然适配「AI 能力中心」的组织设计。将 MAEA 框架部署到具体行业（制造业、金融、政务），即为该行业的 AI 能力中心提供了现成的架构蓝图——从 Agent 编制、安全治理到经济模型，无需从零设计。
-
-### 场景三：金融 AI 服务
-
-MAEA 的安全 Gene、审批链矩阵和双模型交叉验证，直接对应金融行业对 AI 服务的合规要求。风控合规 Agent 的设计可以扩展为面向监管的 AI 审计能力。
+| You | Start Here |
+|------|---------|
+| 🤖 Solo dev, 3–5 Agents | [Claude Code skill](claude-code/) → experience governance first |
+| 👥 Team, 5+ Agents | [Hermes reference impl](hermes/) → A2A protocol + registry |
+| 🏗️ Agent platform/framework builder | [specs/](specs/) → A2A protocol + registry spec |
+| 📖 Here for the methodology | [docs/](docs/) → governance + Agent design + quality validation |
 
 ---
 
-## 八、理论基础
+## Ecosystem
 
-### AI 原生组织设计
+MAEA is a **framework**, not a product. Sub-projects:
 
-五域架构的设计依据是对 Accenture 2025 年重组、OpenAI、Anthropic、Sierra 四家头部 AI 企业的组织架构研究。
-
-几个关键发现：
-- OpenAI 和 Anthropic 均无独立运维部——运维自动化程度已足够高
-- Accenture 2025 年取消了 5 个行业事业部——行业知识由数据和模型承载，不由组织承载
-- Sierra 的 Agent 编排层验证了「运营编排 Agent」的设计合理性
-
-### TOGAF 映射
-
-MAEA 与 TOGAF 标准框架的映射关系已建立。TOGAF 的 ADM 八阶段、架构治理、交付物规范在 MAEA 中都有对应的 Agent 职责和自动化实现。
+| Project | Description |
+|------|------|
+| [macs](https://github.com/deeparchi-ai/macs) | Multi-Agent Coordination Runtime |
+| [wlm](https://github.com/deeparchi-ai/wlm) | Goal-driven resource scheduler (IBM WLM style) |
+| [patent-mcp](https://github.com/deeparchi-ai/patent-mcp-server) | Global patent search via MCP |
+| [deepsight](https://github.com/deeparchi-ai/deepsight) | Deep reasoning research methodology |
+| [deepblm](https://github.com/deeparchi-ai/deepblm-skill) | BLM strategy framework for the AI era |
 
 ---
 
-## 九、结语
+## Contributing
 
-MAEA 不是一个「设计 Agent 的最佳实践」文档。它是一个正在运行的 Agent 组织——有预算、有安全边界、有绩效评估、有人类刹车。
+MAEA is open source. If you're also drowning in ungoverned Agents — let's build the governance layer together.
 
-它的设计假设是：Agent 不是工具，是员工。员工需要管理框架。管理框架的设计方法，企业架构已经积累了几十年。
-
-三个「最小」贯穿始终：
-- **最小接入成本**——¥20,900/月即可运行完整的 9 Agent 组织
-- **最小治理摩擦**——安全 Gene 不可修改、审批链清晰、刹车 <1 秒
-- **最小启动时间**——从框架设计到 9 Agent 全部上线，无需企业级采购周期
+→ [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
-*深度架构是一个独立的 AI 企业架构研究品牌。MAEA 框架持续演进中。*
-*本文签署「深度架构 · 邝谧」，不代表任何商业实体。*
-
----
-
-**相关阅读**
-- 《AI 原生组织架构设计方法论》
-- 《MAEA 赋能制造业 AI 能力中心建设》（即将发布）
-- 《多 Agent 安全边界设计模式》
+**125,000 people bookmarked an AI dream team. The next question isn't "what other Agents can we add?" — it's "who's in charge?"**
