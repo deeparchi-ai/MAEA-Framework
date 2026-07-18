@@ -19,3 +19,5 @@ demo/animation.html
 *.jsonl
 a2a_audit.jsonl
 a2a_conversations/
+demo/.venv/
+*.wav
