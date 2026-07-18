@@ -535,6 +535,10 @@ macs-console policy activate --name=<n>
 
 ## Appendix B: Implementation Status
 
+| Layer | Component | Repository | Status | Tests |
+|-------|-----------|-----------|:------:|:-----:|
+| **0** | **Kernel** | [deeparchi-ai/macs-kernel-go](https://github.com/deeparchi-ai/macs-kernel-go) | ✅ v0.1 | 31 |
+
 | § | Subsystem | Repository | Status | Tests |
 |:--:|-----------|-----------|:------:|:-----:|
 | §2 | Regulator | [deeparchi-ai/macs-regulator-go](https://github.com/deeparchi-ai/macs-regulator-go) | ✅ CPU · 🚧 Token | 34 |
@@ -583,6 +587,7 @@ macs-console policy activate --name=<n>
 | **Console** | MACS §14: operator control plane. Three-mode (Interactive/Headless/Embedded). TSO + ISPF lineage. |
 | **TSO** | Time Sharing Option. z/OS interactive command environment. Console Headless mode inherits its REPL paradigm. |
 | **ISPF** | Interactive System Productivity Facility. z/OS full-screen panel manager. Console Interactive mode inherits its menu navigation. |
+| **Kernel** | MACS infrastructure layer (not a subsystem). BCP-equivalent: Arbiter (Dispatcher), Brake (SVC), Audit (SRB), Trace (traceparent), Lock (Lock Manager). |
 | **Headless** | Console mode: CLI via stdin/stdout REPL. Scriptable, cron-compatible. TSO CLIST equivalent. |
 | **Embedded** | Console mode: MCP server tool set. AI agent calls Console as a tool. TSO Batch (IKJEFT01) equivalent. |
 
