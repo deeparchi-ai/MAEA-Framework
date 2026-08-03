@@ -511,6 +511,45 @@ macs-console policy activate --name=<n>
 
 
 
+## §15 Isolation Boundary Declaration
+
+> IBM lineage: **LPAR / z/VM / z/OS Address Space** — the runtime isolation stack
+
+MACS is a governance plane (control plane). It does **not** implement runtime
+isolation itself. Physical partitioning, virtualization, and process-level
+memory isolation are **deployment-layer responsibilities** (process /
+container / VM), chosen by the operator — see the isolation layer mapping in
+Appendix A.
+
+Mainframe isolation is hardware-enforced (storage protection keys); agent
+isolation is software-enforced (namespaces, cgroups, seccomp). The two cannot
+be copied one-to-one (see Vault counter-document: "Boundaries and Misuse of the Mainframe Analogy"). MACS
+therefore declares its boundary explicitly instead of silently assuming one.
+
+### What MACS guarantees (and only this)
+
+| # | Guarantee | Enforced by |
+|---|-----------|-------------|
+| 1 | **One agent per process** admission check — an agent's identity (Seal) and context must map to exactly one runtime process at registration and startup | Kernel (admission) + Warden (restart path) |
+| 2 | **Enclave declaration** — Agent Manifest gains an `enclave` (isolation domain) field; any call crossing an enclave boundary is intercepted | Nexus (routing) + Sanctum (policy) |
+
+### Manifest `enclave` field
+
+```yaml
+agent:
+  lu: research-agent.prod
+  enclave: research        # isolation domain — must mirror deployment topology
+  processes: 1             # MUST be 1; verified at admission
+```
+
+- Cross-enclave calls MUST carry an explicit Sanctum grant; default = **deny**.
+- The `enclave` value is declared by the operator, not computed by MACS, so
+  policies can reason about isolation domains without owning the isolation.
+- Deployment-layer isolation (Docker / gVisor / VM / LPAR) stays outside MACS
+  scope, but must be reflected in `enclave` values for policy coherence.
+
+---
+
 ## Appendix A: z/OS Subsystem Mapping
 
 | MACS | z/OS | Inherited from IBM | Unique to Agent OS |
@@ -530,6 +569,9 @@ macs-console policy activate --name=<n>
 | §12 Warden | ARM + System Automation | Crash recovery, policy-driven operations | Model outage escalation, human-in-the-loop policies |
 | §13 Pulse | Health Checker | Subsystem health checks, startup verification | Dependency-aware health propagation, watchdog integration |
 | §14 Console | TSO + ISPF | Interactive command environment, full-screen panels | Three-mode (Interactive/Headless/Embedded), Feishu + CLI + MCP, unified control plane |
+| *(Isolation layer)* | LPAR (PR/SM) | Firmware-level partitioning — hardware failure + security domains | Multi-tenant / failure-domain separation at deployment layer — **v2+ planned** |
+| *(Isolation layer)* | z/VM | Hypervisor-level full VM isolation | Full sandbox, external (Docker / gVisor) — deployment layer, not MACS kernel |
+| *(Isolation layer)* | z/OS Address Space + Storage Keys | Process-level virtual memory isolation + protection-key levels | One-process-per-agent deployment requirement; Sanctum L2 static boundaries ≈ Storage Key semantics |
 
 ---
 
@@ -604,8 +646,10 @@ macs-console policy activate --name=<n>
 | **Kernel** | MACS infrastructure layer (not a subsystem). BCP-equivalent: Arbiter (Dispatcher), Brake (SVC), Audit (SRB), Trace (traceparent), Lock (Lock Manager). |
 | **Headless** | Console mode: CLI via stdin/stdout REPL. Scriptable, cron-compatible. TSO CLIST equivalent. |
 | **Embedded** | Console mode: MCP server tool set. AI agent calls Console as a tool. TSO Batch (IKJEFT01) equivalent. |
+| **Enclave** | Agent Manifest isolation-domain field (§15). Declared by the operator; cross-enclave calls default-deny via Nexus + Sanctum. Deployment-layer isolation stays outside MACS. |
+| **Isolation Boundary** | MACS §15: explicit declaration that runtime isolation (process/container/VM) is a deployment-layer responsibility, not MACS kernel scope. |
 
 ---
 
 > *MAEA Framework · DeepArchi Team*
-> *2026-07-18 · [deeparchi.ai](https://deeparchi.ai)*
+> *2026-08-03 · [deeparchi.ai](https://deeparchi.ai)*
