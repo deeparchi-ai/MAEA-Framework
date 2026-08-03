@@ -651,5 +651,46 @@ agent:
 
 ---
 
+## Appendix D: Data Domain Matrix
+
+> IBM lineage: **Storage Keys** (0–15) — every page is tagged with a storage key;
+> a task may access a page only if its PSW key matches or is privileged.
+
+Sanctum L2 static boundaries (§3) approximate Storage Key semantics at the
+data level: every data domain carries an access class, and an agent may touch
+a domain only if its security level (L1/L2/L3) is authorized.
+
+| Data domain | L1 access | L2 access | L3 access |
+|-------------|:---------:|:---------:|:---------:|
+| Budget / financial data | ✅ | Read-only rollups | ❌ |
+| Architecture topology | ✅ | Read-only | ❌ |
+| Core business data | ✅ | ✅ | ❌ |
+| Code repositories | ✅ | ✅ | ❌ |
+| External public information | ✅ | ✅ | ✅ |
+| Audit logs | ✅ read-only | ❌ | ❌ |
+| Human personal information | ❌ | ❌ | ❌ |
+
+### Cross-level communication rules
+
+- **L2 → L1 upstream data: auto-blocked** (strictly forbidden)
+- **L1 → L2 downstream directives: allowed** (topology management)
+- **Same-level lateral calls: forbidden** — must route through the
+  architecture agent (DAG topology check + Nexus routing)
+
+### Storage Key mapping
+
+| z/OS Storage Key | MACS equivalent |
+|------------------|-----------------|
+| Key-tagged pages | Data domains with access class (above) |
+| PSW key match required | Sanctum L2 authorization check before any data access |
+| Key 0 (privileged) | L1 — may read all non-PII domains |
+| Key mismatch → program check | Unauthorized access → Chronicle audit event + Gateway block |
+| Key 8–15 (system) | Kernel-only domains (audit logs, seal keys) — no agent level reaches them |
+
+> Data domain matrix source: `agent-security-boundary` skill. PII is the only
+> domain with no access level — by design.
+
+---
+
 > *MAEA Framework · DeepArchi Team*
 > *2026-08-03 · [deeparchi.ai](https://deeparchi.ai)*
