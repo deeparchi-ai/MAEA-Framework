@@ -126,6 +126,7 @@ Phase 4: Conflict    ✅ overlap detected
 | 👥 Team, 5+ Agents | [Hermes reference impl](hermes/) → A2A protocol + registry |
 | 🏗️ Agent platform/framework builder | [specs/](specs/) → A2A protocol + registry spec |
 | 📖 Here for the methodology | [docs/](docs/) → governance + Agent design + quality validation |
+| 🧬 Where our ideas come from | [docs/adoptions/](docs/adoptions/) → adoption register: every external source, what we took, what we left |
 
 ---
 
