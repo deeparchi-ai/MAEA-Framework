@@ -9,10 +9,10 @@
 
 | 编号 | 来源 | 吸收内容 | 落点 | 实现状态 |
 |:----:|------|---------|------|---------|
-| [A-001](A-001-ibm-zos-subsystems.md) | IBM z/OS 子系统族 | 15 个治理机制映射（WLM/RACF/CICS/SMF/JES2/DFSMS/VTAM/RMF/ICSF/XCF/ARM/Health Checker/TSO-ISPF/隔离层/存储键） | `specs/macs-governance-spec.md` §2–§15 + Appendix A | 部分实现（WLM → [wlm](https://github.com/deeparchi-ai/wlm)，其余设计完成/待实现） |
+| [A-001](A-001-ibm-zos-subsystems.md) | IBM z/OS 子系统族 | 15 个治理机制映射（WLM/RACF/CICS/SMF/JES2/DFSMS/VTAM/RMF/ICSF/XCF/ARM/Health Checker/TSO-ISPF/隔离层/存储键） | `specs/macs-governance-spec.md` §2–§15 + Appendix A | 已实现：14 个 `macs-*-go` 仓库（Regulator/Chronicle 标 partial） |
 | [A-002](A-002-togaf.md) | TOGAF 10 / ADM | ADM 八阶段→Agent 职责映射、架构治理、交付物规范 | `docs/zh/maea-whitepaper.md` 理论基础章 | 文档级（无代码实现需求） |
 | [A-003](A-003-ai-native-org-research.md) | Accenture 2025 重组 / OpenAI / Anthropic / Sierra | 五域架构设计依据（无独立运维部、行业知识由数据承载等） | `docs/zh/maea-whitepaper.md` 五域章 | 已落地（本仓 Agent 拓扑即五域） |
-| [A-004](A-004-a2a-mcp-protocols.md) | Google A2A（LF AAIF）/ Anthropic MCP | Agent Card、Task、JSON/HTTP 概念对齐；MCP 作为工具层 | `specs/a2a-protocol.md` §8.1、`specs/mcp-integration.md` | 已实现（Hermes 运行时 + 27 Agent 在跑） |
+| [A-004](A-004-a2a-mcp-protocols.md) | Google A2A（LF AAIF）/ Anthropic MCP | Agent Card、Task、JSON/HTTP 概念对齐；MCP 作为工具层 | `specs/a2a-protocol.md` §8.1、`specs/mcp-integration.md` | 部分实现（Nexus §8 落地；A2A 官方 TCK 未对表） |
 
 ## 候选（尚未吸收，等评估）
 

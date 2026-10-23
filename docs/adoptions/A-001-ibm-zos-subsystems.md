@@ -44,8 +44,8 @@
 
 | 实现 | 状态 | 记录 |
 |------|------|------|
-| Kernel + 14 子系统 | ✅ 全部公开落地（`deeparchi-ai/macs-kernel-go` 等 14 个 `macs-*-go` 仓库） | Appendix B：单测 387 项（kernel + 14 子系统）+ POC 集成 30 项 |
-| MACS Dashboard | 部分 | ADR-001 只读观测；ADR-002 A2A 自动发现 |
+| Kernel + 14 子系统 | ⚠️ 14 个 `macs-*-go` 仓库公开；Regulator、Chronicle 标 partial，其余 v0.1–v0.2 | Appendix B：单测 387 项（kernel + 14 子系统）+ POC 集成 30 项 |
+| MACS Dashboard（dashboard 期） | ⛔ 已被 SPEC v3.0 取代 | 旧 `master` 分支的 6 条 ADR 随之失效；现行判据见 `macs/specs/decisions/ADR-002` |
 
 ## 备注
 
